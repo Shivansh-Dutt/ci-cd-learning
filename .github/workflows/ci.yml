@@ -55,3 +55,21 @@ jobs:
       - name: Trigger Render Deployment
         run: |
           curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Wait and verify health
+        run: |
+          URL="https://YOUR-APP.onrender.com"
+    
+          curl -f --retry 10 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            "$URL/health"
+    
+      - name: Verify home endpoint
+        run: |
+          curl -f https://YOUR-APP.onrender.com/
