@@ -13,3 +13,9 @@ def test_health():
 
     assert response.status_code == 200
     assert response.json["status"] == "healthy"
+    
+def test_profile():
+    client = app.test_client()
+    response = client.get("/profile")
+    assert response.status_code == 200
+    assert response.get_data(as_text=True) == "Welcome User"
