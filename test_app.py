@@ -1,15 +1,15 @@
-from app import add, divide
+from app import app
 
+def test_home():
+    client = app.test_client()
+    response = client.get("/")
 
-def test_add():
-    assert add(2, 3) == 5
+    assert response.status_code == 200
+    assert response.json["status"] == "running"
 
-def test_divide():
-    assert divide(10, 2) == 5
+def test_health():
+    client = app.test_client()
+    response = client.get("/health")
 
-def test_divide_by_zero():
-    try:
-        divide(10, 0)
-        assert False
-    except ValueError:
-        assert True
+    assert response.status_code == 200
+    assert response.json["status"] == "healthy"

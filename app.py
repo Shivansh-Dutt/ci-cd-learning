@@ -1,7 +1,17 @@
-def add(a, b):
-    return a + b
+from flask import Flask, jsonify
 
-def divide(a, b):
-    if b == 0:
-        raise ValueError("Cannot divide by zero")
-    return a / b
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return jsonify({
+        "message": "Hello from CI/CD!",
+        "status": "running"
+    })
+    
+@app.route("/health")
+def health():
+    return jsonify({"status": "healthy"}), 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
