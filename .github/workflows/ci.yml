@@ -70,7 +70,7 @@ jobs:
 
           curl --fail --show-error --get \
             --data-urlencode "imgURL=${IMAGE}" \
-            "$RENDER_HOOK" }}"
+            "$RENDER_HOOK"
 
   smoke-test:
     needs: deploy
