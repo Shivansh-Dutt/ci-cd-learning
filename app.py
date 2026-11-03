@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import os
 
 app = Flask(__name__)
 
@@ -11,6 +12,9 @@ def home():
     
 @app.route("/health")
 def health():
+    if os.getenv("BREAK_HEALTH_CHECK") == "true":
+        return jsonify({"status": "unhealthy"}), 500
+
     return jsonify({"status": "healthy"}), 200
 
 @app.route("/profile")
