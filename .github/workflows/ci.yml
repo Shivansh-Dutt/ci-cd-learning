@@ -72,4 +72,4 @@ jobs:
     
       - name: Verify home endpoint
         run: |
-          curl -f https://YOUR-APP.onrender.com/
+          curl -f https://ci-cd-flask-app-37ye.onrender.com/
