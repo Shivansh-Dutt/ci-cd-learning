@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Wait and verify health
         run: |
-          URL="https://YOUR-APP.onrender.com"
+          URL="https://ci-cd-flask-app-37ye.onrender.com"
     
           curl -f --retry 10 \
             --retry-delay 10 \
