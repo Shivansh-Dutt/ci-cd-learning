@@ -94,17 +94,44 @@ jobs:
   smoke-test:
     needs: deploy
     runs-on: ubuntu-latest
-  
+
     steps:
-      - name: Wait and verify health
+      - name: Wait for Render deployment
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          DEPLOY_ID: ${{ needs.deploy.outputs.deploy_id }}
+        run: |
+          for i in {1..30}; do
+            RESPONSE=$(curl --fail --silent --show-error \
+              --url "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${DEPLOY_ID}" \
+              --header "Authorization: Bearer ${RENDER_API_KEY}")
+
+            STATUS=$(echo "$RESPONSE" | jq -r '.status')
+
+            echo "Deployment status: $STATUS"
+
+            if [ "$STATUS" = "live" ]; then
+              echo "Deployment is live!"
+              exit 0
+            fi
+
+            if [[ "$STATUS" == *"failed"* || "$STATUS" == "canceled" ]]; then
+              echo "Deployment failed!"
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+          echo "Deployment timed out after 5 minutes"
+          exit 1
+
+      - name: Verify health endpoint
         run: |
           URL="https://ci-cd-flask-app-37ye.onrender.com"
-    
-          curl -f --retry 10 \
-            --retry-delay 10 \
-            --retry-all-errors \
-            "$URL/health"
-    
+          curl -f --retry 10 --retry-delay 10 --retry-all-errors "$URL/health"
+
       - name: Verify home endpoint
         run: |
           curl -f https://ci-cd-flask-app-37ye.onrender.com/
