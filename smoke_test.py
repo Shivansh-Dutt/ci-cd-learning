@@ -1,23 +1,25 @@
 import os
 
-import requests
 from dotenv import load_dotenv
+
+from app import app
 
 load_dotenv()
 
-BASE_URL = "http://127.0.0.1:5000"
-
 def test_health():
-    response = requests.get(f"{BASE_URL}/health")
+    client = app.test_client()
+    response = client.get("/health")
     assert response.status_code == 200
 
 def test_home():
-    response = requests.get(f"{BASE_URL}/")
+    client = app.test_client()
+    response = client.get("/")
     assert response.status_code == 200
 
 def test_login():
-    response = requests.post(
-        f"{BASE_URL}/login",
+    client = app.test_client()
+    response = client.post(
+        "/login",
         json={
             "username": os.environ["TEST_USERNAME"],
             "password": os.environ["TEST_PASSWORD"]
@@ -25,4 +27,4 @@ def test_login():
     )
 
     assert response.status_code == 200
-    assert response.json()["message"] == "Login successful"
+    assert response.json["message"] == "Login successful"
