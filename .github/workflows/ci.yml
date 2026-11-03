@@ -28,6 +28,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,11 +41,18 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/ci-cd-flask-app:latest .
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/ci-cd-flask-app"
 
-      - name: Push Docker image
+          docker build \
+            -t "$IMAGE:${GITHUB_SHA}" \
+            -t "$IMAGE:latest" .
+
+      - name: Push versioned image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/ci-cd-flask-app:latest
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/ci-cd-flask-app"
+
+          docker push "$IMAGE:${GITHUB_SHA}"
+          docker push "$IMAGE:latest"
 
   deploy:
     needs: docker
@@ -52,9 +61,16 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Trigger Render Deployment
+      - name: Deploy exact commit image
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          IMAGE="docker.io/${DOCKER_USER}/ci-cd-flask-app:${GITHUB_SHA}"
+
+          curl --fail --show-error --get \
+            --data-urlencode "imgURL=${IMAGE}" \
+            "$RENDER_HOOK" }}"
 
   smoke-test:
     needs: deploy
